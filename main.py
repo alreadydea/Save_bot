@@ -122,7 +122,53 @@ def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_me
                 bot.send_video(message.chat.id, file, duration=msg.video.duration, width=msg.video.width, height=msg.video.height, thumb=thumb, caption=msg.caption, caption_entities=msg.caption_entities, reply_to_message_id=message.id, progress=progress, progress_args=[message,"up"])
                 if thumb != None:
                     os.remove(thumb)
+try:
+                value = int(_range.text)
+                if value > 100:
+                    await conv.send_message("You can only get upto 100 files in a single batch.")
+                    return conv.cancel()
+            except ValueError:
+                await conv.send_message("Range must be an integer!")
+                return conv.cancel()
+            batch.append(event.sender_id)
+            await run_batch(userbot, Bot, event.sender_id, _link, value) 
+            conv.cancel()
+            batch.clear()
 
+async def run_batch(userbot, client, sender, link, _range):
+    for i in range(_range):
+        timer = 60
+        if i < 25:
+            timer = 5
+        if i < 50 and i > 25:
+            timer = 10
+        if i < 100 and i > 50:
+            timer = 15
+        if not 't.me/c/' in link:
+            if i < 25:
+                timer = 2
+            else:
+                timer = 3
+        try: 
+            if not sender in batch:
+                await client.send_message(sender, "Batch completed.")
+                break
+        except Exception as e:
+            print(e)
+            await client.send_message(sender, "Batch completed.")
+            break
+        try:
+            await get_bulk_msg(userbot, client, sender, link, i) 
+        except FloodWait as fw:
+            if int(fw.x) > 299:
+                await client.send_message(sender, "Cancelling batch since you have floodwait more than 5 minutes.")
+                break
+            await asyncio.sleep(fw.x + 5)
+            await get_bulk_msg(userbot, client, sender, link, i)
+        protection = await client.send_message(sender, f"Sleeping for `{timer}` seconds to avoid Floodwaits and Protect account!")
+        await asyncio.sleep(timer)
+        await protection.delete()
+            
             elif "Animation" in str(msg):
                 bot.send_animation(message.chat.id, file, reply_to_message_id=message.id)
                
