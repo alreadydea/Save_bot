@@ -20,8 +20,61 @@ async def account_login(bot: Client, m: Message):
  editable = await m.reply_text("**I am a simple save restricted bot**.\n\nSend message link to clone/download here\n Must join:- @Bypass_restricted")
 @bot.on_message(filters.command(["bulk"]))
 async def account_login(bot: Client, m: Message):
- editable = await m.reply_text("**I am not an advanced bot")
+ editable = await m.reply_text("**I am an advanced bot")
+await conv.send_message("Send me the number of files/range you want to save from the given message, as a reply to this message.", buttons=Button.force_reply())
+            try:
+                _range = await conv.get_reply()
+            except Exception as e:
+                print(e)
+                await conv.send_message("Cannot wait more longer for your response!")
+                return conv.cancel()
+            try:
+                value = int(_range.text)
+                if value > 10000:
+                    await conv.send_message("You can only get upto 100 files in a single bulk.")
+                    return conv.cancel()
+            except ValueError:
+                await conv.send_message("Range must be an integer!")
+                return conv.cancel()
+            bulk.append(event.sender_id)
+            await run_bulk(userbot, Bot, event.sender_id, _link, value) 
+            conv.cancel()
+            bulk.clear()
 
+async def run_bulk(userbot, client, sender, link, _range):
+    for i in range(_range):
+        timer = 60
+        if i < 25:
+            timer = 5
+        if i < 50 and i > 25:
+            timer = 10
+        if i < 100 and i > 50:
+            timer = 15
+        if not 't.me/c/' in link:
+            if i < 25:
+                timer = 2
+            else:
+                timer = 3
+        try: 
+            if not sender in bulk:
+                await client.send_message(sender, "bulk completed.")
+                break
+        except Exception as e:
+            print(e)
+            await client.send_message(sender, "bulk completed.")
+            break
+        try:
+            await get_bulk_msg(userbot, client, sender, link, i) 
+        except FloodWait as fw:
+            if int(fw.x) > 299:
+                await client.send_message(sender, "Cancelling bulk since you have floodwait more than 5 minutes.")
+                break
+            await asyncio.sleep(fw.x + 5)
+            await get_bulk_msg(userbot, client, sender, link, i)
+        protection = await client.send_message(sender, f"Sleeping for `{timer}` seconds to avoid Floodwaits and Protect account!")
+        await asyncio.sleep(timer)
+        await protection.delete()
+            
 # download status
 def downstatus(statusfile,message):
     while True:
