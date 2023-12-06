@@ -6,8 +6,8 @@
         "files",
         "bot"
     ],
-    "repository": "https://github.com/kishaku23/Save_restricted_bot",
-    "website": "https://github.com/kishaku23/Save_restricted_bot",
+    "repository": "https://github.com/alreadydea/Save_bot",
+    "website": "https://github.com/alreadydea/Save_bot",
     "success_url": "https://t.me/Raj02_bots",
     "env": {
         "ID": {
